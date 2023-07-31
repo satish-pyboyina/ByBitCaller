@@ -4,3 +4,6 @@ json
 hashlib
 hmac
 uuid
+pandas
+pyarrow
+sqlite3
