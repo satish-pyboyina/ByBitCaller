@@ -20,14 +20,15 @@ column_names = [column_info[1] for column_info in columns_info]
 print(column_names)
 
 # # Execute a SELECT query
-cursor.execute(f"SELECT * FROM {table_name} limit 1")
+# cursor.execute(f"SELECT * FROM {table_name} limit 10")
 
-# # Fetch data
+# # Fetch one row of data
 # row = cursor.fetchone()
 # print(row)
 
+# fetch all rows of data
 # all_rows = cursor.fetchall()
-print(cursor.fetchall())
+# print(cursor.fetchall())
 
 # # Execute a SELECT query
 cursor.execute(f"SELECT min(startTime), max(startTime), count(*) FROM {table_name} ")

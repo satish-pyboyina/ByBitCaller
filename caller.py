@@ -1,9 +1,9 @@
 import config, json
 import requests
-import time
-import hashlib
-import hmac
-import uuid
+# import time
+# import hashlib
+# import hmac
+# import uuid
 from pybit.unified_trading import HTTP
 import datetime as dt
 import pandas as pd
@@ -11,11 +11,21 @@ import sqlite3
 from time import sleep
 from inspect import currentframe
 
+#   Pulls historic OHLC data from ByBit for given Symbol from given date at specified interval
+#   Writes output to a JSON file and SQL database
 
-# https://github.com/bybit-exchange/api-usage-examples/blob/master/V5_demo/api_demo/Encryption_HMAC.py
+# Based of following scripts:
+#   https://github.com/bybit-exchange/api-usage-examples/blob/master/V5_demo/api_demo/Encryption_HMAC.py
+#   https://gist.github.com/so1tsuda/7de86e94a8b39fc141daddd78990e5fc#file-bybit_get_historical_kline-py
+#   https://github.com/ryu878/Bybit-OHLC-Data-Saver/blob/main/get_ohlc.py
 
-api_key=config.API_KEY
-secret_key=config.API_SECRET
+
+#   Based on ByBit API Version 5
+#   https://bybit-exchange.github.io/docs/v5/market/index-kline
+
+# establish connection
+api_key=config.API_KEY # expects api key to be present in config.py file
+secret_key=config.API_SECRET # expects api secret key to be present in config.py file
 httpClient=requests.Session()
 recv_window=str(5000)
 
@@ -23,76 +33,39 @@ recv_window=str(5000)
 url = 'https://api.bybit.com'
 # print(url)
 
+# Set testnet=True to use testnet
 session = HTTP(testnet=False)
 
-# def HTTP_Request(endPoint,method,payload,Info):
-#     global time_stamp
-#     time_stamp=str(int(time.time() * 10 ** 3))
-#     signature=genSignature(payload)
-#     headers = {
-#         'X-BAPI-API-KEY': api_key,
-#         'X-BAPI-SIGN': signature,
-#         'X-BAPI-SIGN-TYPE': '2',
-#         'X-BAPI-TIMESTAMP': time_stamp,
-#         'X-BAPI-RECV-WINDOW': recv_window,
-#         'Content-Type': 'application/json'
-#     }
-#     if(method=="POST"):
-#         response = httpClient.request(method, url+endPoint, headers=headers, data=payload)
-#     else:
-#         response = httpClient.request(method, url+endPoint+"?"+payload, headers=headers)
-#     print(response.text)
-#     print(Info + " Elapsed Time : " + str(response.elapsed))
+# set parameters
+categoryP = 'inverse'   # Allowed values: linear,inverse
+symbolP = 'ETHUSD'      
+intervalP = 5 # Time interval for pulling data. Allowed values: 1,3,5,15,30,60,120,240,360,720,D,M,W
+limitP = 1000 # ByBit applies 1000 limit
 
-# def genSignature(payload):
-#     param_str= str(time_stamp) + api_key + recv_window + payload
-#     hash = hmac.new(bytes(secret_key, "utf-8"), param_str.encode("utf-8"),hashlib.sha256)
-#     signature = hash.hexdigest()
-#     return signature
+# restricting limit to avoid user error
+if limitP > 1000:
+    limitP = 1000
 
-categoryP = 'inverse'
-symbolP = 'ETHUSD'
-intervalP = 10
-limitP = 1000
-
+# Set Start Date
 year = 2023
 month = 1
 day = 1
 
-# startDt = dt.datetime(year, month, day)
-# endDt = dt.datetime.now()
-
-# startTime = str(int(startDt.timestamp())*1000)
-# endTime   = str(int(endDt.timestamp())*1000)
 
 def get_linenumber():
     cf = currentframe()
     global line_number
     line_number = cf.f_back.f_lineno
 
-def get_bybit_bars(categoryP, symbolP, intervalP, startTime, endTime, limitP):
-
-    # url = 'https://api.bybit.com/public/linear/kline'
-    print("Start: " + str(startTime) + " , End: " + str(endTime))
-    startTime = str(int(startTime.timestamp())*1000)
-    endTime   = str(int(endTime.timestamp())*1000)
-    print("StartTime: " + startTime + " , EndTime: " + endTime)
-
+def get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP):
     ohlc=(session.get_kline(
         category=categoryP,
         symbol=symbolP,
         interval=intervalP,
-        start=startTime, # 1675170000000, # 1 Feb 2023
-        end=endTime, #1690293600000, # 26 July 2023
+        start=startTime, 
+        # end=endTime, # if endTime is mentioned data is pulled backwards from endTime onwards. If startTime is lower than (endTime - limit) it will be discarded.
         limit=limitP,
     ))
-
-    with open(f'ETH-2023-ohlc.json', 'w') as file:
-        json.dump(ohlc, file)
-    print(f"API response has been saved to 'ETH-2023-ohlc.json'")
-
-    # req_params = {'category' : category, 'symbol' : symbol, 'interval' : interval, 'from' : startTime, 'to' : endTime}
-    # df = pd.DataFrame(json.loads(requests.get(url, params = req_params).text)['result'])
 
     data_list = ohlc['result']['list']
     extracted_data = []
@@ -107,59 +80,61 @@ def get_bybit_bars(categoryP, symbolP, intervalP, startTime, endTime, limitP):
 
         extracted_data.append([dateTime,startTime, openPrice, highPrice, lowPrice, closePrice])
 
-    # df = pd.DataFrame(ohlc)
     df = pd.DataFrame(extracted_data, columns=['dateTime','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice'])
 
-    top_10_rows = df.head(10)
-    print(top_10_rows)
+    # capture and print top 10 rows of dataframe
+    # top_10_rows = df.head(10)
+    # print(top_10_rows)
 
+    #check if no dataframe is blank to break
     if (len(df.index) == 0):
         return None
     
-    # df.index = [dt.datetime.fromtimestamp(x) for x in df.open_time]
+    # write output to a file
+    # filename = 'ETH-2023-ohlc-' + startTime + '.json'
+    filename = 'ETH-2023-ohlc.json'
+    with open(filename, 'a') as file:
+        json.dump(ohlc, file)
+    # print(f"API response has been saved to {filename}")
+    # print("------------------------------------------")
+
     df.index = [dt.datetime.fromtimestamp(x) for x in df.dateTime]
-    print('index')
-    #convert time in seconds to timestamp
+    # print('index: ' + str(df.index))
+    #convert time in seconds to milliseconds
     df['dateTime'] = pd.to_datetime(df['dateTime']*1000, errors='coerce')
     return df
 
-# print("StartDt: " + str(startDt) + " , EndDt: " + str(endDt) + " , StartTime: " + startTime + " , EndTime: " + endTime)
-
-
-
-# print(session.get_tickers(
-#     category="inverse",
-#     symbol="ETHUSD",
-# ))
-
-# response=session.get_tickers(category="inverse",symbol="ETHUSD",)
-
-# data = response.json()  # Parse the JSON response
-
-# print(response)
-
-# Write the API response to a file
-# with open('ETH-2023-ohlc.json', 'w') as file:
-#     json.dump(ohlc, file)
-# print("API response has been saved to 'ETH-2023-ohlc.json'")
 
 df_list = []
-last_datetime = dt.datetime(year, month, day)
+start_datetime = dt.datetime(year, month, day) 
+startTime = str(int(start_datetime.timestamp())*1000) # determine date in milliseconds
+endTime   = str(int(startTime) + (limitP*60*1000*intervalP)) # calculated end time in milliseconds
+# Though variable is named endTime, data for this last timestamp is not pulled
+
+# print("start_datetime: " + str(start_datetime))
+# print("StartTime: " + startTime + " , EndTime: " + endTime) # print in milliseconds format
+# print("StartTimeStamp: " + str(dt.datetime.fromtimestamp(int(startTime)/1000)) + " , EndTimeStamp: " + str(dt.datetime.fromtimestamp(int(endTime)/1000))) # print in timestamp format
 
 while True:
+    new_df = get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP)
 
-    print(last_datetime)
-    new_df = get_bybit_bars(categoryP, symbolP, intervalP, last_datetime, dt.datetime.now(),limitP)
     if new_df is None:
         break
     df_list.append(new_df)
-    last_datetime = max(new_df.index) + dt.timedelta(0, 1)
+    startTime = endTime # as data is not pulled for endTime timestamp last time, startTime is set to previous loop's endTime
+    endTime   = str(int(startTime) + (limitP*60*1000*intervalP))
+
+    first_datetime = min(new_df.index)
+    last_datetime = max(new_df.index)
+
+    # print("first_datetime: " + str(first_datetime)) # First Timestamp in dataframe
+    # print("last_datetime: " + str(last_datetime)) # Last Timestamp in dataframe
+    # print("StartTime: " + startTime + " , EndTime: " + endTime) # print in milliseconds format
+    # print("StartTimeStamp: " + str(dt.datetime.fromtimestamp(int(startTime)/1000)) + " , EndTimeStamp: " + str(dt.datetime.fromtimestamp(int(endTime)/1000))) # print in timestamp format
+
     df = pd.concat(df_list)
 
-    # print(df)
-    # df.to_parquet('ETH-2023-ohlc.parquet')
-
-    try:               
+    try:
 
         conn = sqlite3.connect('ohcl.db')
         column_names=['time','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice']
