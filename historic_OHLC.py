@@ -38,7 +38,7 @@ session = HTTP(testnet=False)
 
 # set parameters
 categoryP = 'inverse'   # Allowed values: linear,inverse
-symbolP = 'ETHUSD'      
+symbolP = 'ETHUSD'      # For linear use 'ETHUSDT'; for inverse use 'ETHUSD'
 intervalP = 5 # Time interval for pulling data. Allowed values: 1,3,5,15,30,60,120,240,360,720,D,M,W
 limitP = 1000 # ByBit applies 1000 limit
 
