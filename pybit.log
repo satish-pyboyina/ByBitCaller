@@ -1,0 +1,46 @@
+2023-08-10 00:41:47,206 DEBUG Initializing HTTP session.
+2023-08-10 00:41:47,211 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:41:47,595 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=UNIFIED HTTP/1.1" 404 0
+2023-08-10 00:41:47,595 DEBUG Response text: 
+2023-08-10 00:43:06,450 DEBUG Initializing HTTP session.
+2023-08-10 00:43:06,462 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:43:06,865 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 00:52:31,051 DEBUG Initializing HTTP session.
+2023-08-10 00:52:31,055 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:52:31,449 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 00:54:35,270 DEBUG Initializing HTTP session.
+2023-08-10 00:54:35,274 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:54:35,445 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 00:55:06,472 DEBUG Initializing HTTP session.
+2023-08-10 00:55:06,476 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:55:06,650 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 00:55:47,436 DEBUG Initializing HTTP session.
+2023-08-10 00:55:47,439 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 00:55:47,636 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:01:57,870 DEBUG Initializing HTTP session.
+2023-08-10 01:01:57,874 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:01:58,246 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT&coin=ETH HTTP/1.1" 200 598
+2023-08-10 01:07:26,978 DEBUG Initializing HTTP session.
+2023-08-10 01:07:26,982 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:07:27,152 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:07:46,118 DEBUG Initializing HTTP session.
+2023-08-10 01:07:46,122 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:07:46,280 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:13:43,645 DEBUG Initializing HTTP session.
+2023-08-10 01:13:43,649 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:13:44,027 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:13:56,332 DEBUG Initializing HTTP session.
+2023-08-10 01:13:56,336 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:13:56,506 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:16:03,268 DEBUG Initializing HTTP session.
+2023-08-10 01:16:03,272 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:16:03,651 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:20:25,696 DEBUG Initializing HTTP session.
+2023-08-10 01:20:25,700 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:20:25,874 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:20:53,718 DEBUG Initializing HTTP session.
+2023-08-10 01:20:53,722 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:20:53,896 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892
+2023-08-10 01:45:20,597 DEBUG Initializing HTTP session.
+2023-08-10 01:45:20,601 DEBUG Starting new HTTPS connection (1): api.bybit.com:443
+2023-08-10 01:45:20,776 DEBUG https://api.bybit.com:443 "GET /v5/account/wallet-balance?accountType=CONTRACT HTTP/1.1" 200 892

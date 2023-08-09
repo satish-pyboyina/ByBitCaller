@@ -23,23 +23,19 @@ from inspect import currentframe
 #   Based on ByBit API Version 5
 #   https://bybit-exchange.github.io/docs/v5/market/index-kline
 
-# establish connection
-api_key=config.API_KEY # expects api key to be present in config.py file
-secret_key=config.API_SECRET # expects api secret key to be present in config.py file
-httpClient=requests.Session()
-recv_window=str(5000)
 
 # API endpoint URL
-url = 'https://api.bybit.com'
+# url = 'https://api.bybit.com' #mainnet
+# url = 'https://api-testnet.bybit.com' #testnet
 # print(url)
 
-# Set testnet=True to use testnet
+# testnet=True means your API keys were generated on testnet.bybit.com
 session = HTTP(testnet=False)
 
 # set parameters
 categoryP = 'inverse'   # Allowed values: linear,inverse
 symbolP = 'ETHUSD'      # For linear use 'ETHUSDT'; for inverse use 'ETHUSD'
-intervalP = 5 # Time interval for pulling data. Allowed values: 1,3,5,15,30,60,120,240,360,720,D,M,W
+intervalP = 60 # Time interval for pulling data. Allowed values: 1,3,5,15,30,60,120,240,360,720,D,M,W
 limitP = 1000 # ByBit applies 1000 limit
 
 # restricting limit to avoid user error
@@ -92,7 +88,7 @@ def get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP):
     
     # write output to a file
     # filename = 'ETH-2023-ohlc-' + startTime + '.json'
-    filename = 'ETH-2023-ohlc.json'
+    filename = f'{symbolP}-{year}-{month}-ohlc.json'
     with open(filename, 'a') as file:
         json.dump(ohlc, file)
     # print(f"API response has been saved to {filename}")
@@ -136,7 +132,7 @@ while True:
 
     try:
 
-        conn = sqlite3.connect('ohcl.db')
+        conn = sqlite3.connect('ohlc.db')
         column_names=['time','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice']
         df.to_sql(f'{symbolP}', conn, if_exists='replace', index=False)
 
