@@ -1,7 +1,7 @@
 import sqlite3
 
 # Connect to the database
-conn = sqlite3.connect('ohcl.db')
+conn = sqlite3.connect('ohlc.db')
 
 # Create a cursor
 cursor = conn.cursor()
