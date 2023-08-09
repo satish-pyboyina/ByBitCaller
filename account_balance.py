@@ -27,23 +27,18 @@ accountTypeP = 'CONTRACT'    # Unified account: UNIFIED (trade spot/linear/optio
 coinP = 'ETH'             # If not passed, it returns non-zero asset info. Pass multiple coins to query, separated by comma. USDT,USDC
 
 def getWalletBalance(accountTypeP,coinP):
-    wallet_balance = session.get_wallet_balance(
+    walletBalance = session.get_wallet_balance(
         accountType = accountTypeP,
-        # coin=coinP,                 # If not passed, it returns non-zero asset info. Pass multiple coins to query, separated by comma. USDT,USDC
+        coin=coinP,                 # If not passed, it returns non-zero asset info. Pass multiple coins to query, separated by comma. USDT,USDC
     )
-    return wallet_balance
+    coinBalance = walletBalance['result']['list']
+    for i in coinBalance:
+        for key, val in i.items():
+                if key == 'coin':
+                        pprint.pprint(val)
+        coin_data = i['coin'][0]
+        availableToWithdraw = coin_data['availableToWithdraw']
+    return availableToWithdraw
 
 walletBalance = getWalletBalance(accountTypeP,coinP)
-
-coinBalance = walletBalance['result']['list']
-
-pprint.pprint(walletBalance)
-
-for key,values in coinBalance:
-    for i in values:
-        for key,values in i:
-            if key == 'coin':
-                c = values
-                for key,values in c:
-                    pprint.pprint(f"{key} : {values}")
-
+print(f'-------------\n {walletBalance}')
