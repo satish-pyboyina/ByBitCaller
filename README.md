@@ -1,6 +1,6 @@
 I'm neither a developer nor a financial advisor. This script is strictly built for educational purposes only.
 
-Based ByBit API Version 5 and following scripts:
+Based on ByBit API Version 5 and following scripts:
 https://github.com/bybit-exchange/api-usage-examples/blob/master/V5_demo/api_demo/Encryption_HMAC.py
 https://gist.github.com/so1tsuda/7de86e94a8b39fc141daddd78990e5fc#file-bybit_get_historical_kline-py
 https://github.com/ryu878/Bybit-OHLC-Data-Saver/blob/main/get_ohlc.py
