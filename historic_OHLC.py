@@ -101,6 +101,26 @@ def get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP):
     return df
 
 
+def add_ichimoku(df):
+    # Calculate Ichimoku Cloud components
+    nine_period_high = df['highPrice'].rolling(window=9).max()
+    nine_period_low = df['lowPrice'].rolling(window=9).min()
+    df['tenkan_sen'] = (nine_period_high + nine_period_low) / 2
+
+    period26_high = df['highPrice'].rolling(window=26).max()
+    period26_low = df['lowPrice'].rolling(window=26).min()
+    df['kijun_sen'] = (period26_high + period26_low) / 2
+
+    df['senkou_span_a'] = ((df['tenkan_sen'] + df['kijun_sen']) / 2).shift(26)
+
+    period52_high = df['highPrice'].rolling(window=52).max()
+    period52_low = df['lowPrice'].rolling(window=52).min()
+    df['senkou_span_b'] = ((period52_high + period52_low) / 2).shift(26)
+
+    df['chikou_span'] = df['closePrice'].shift(-26)
+
+    return df
+
 df_list = []
 start_datetime = dt.datetime(year, month, day) 
 startTime = str(int(start_datetime.timestamp())*1000) # determine date in milliseconds
@@ -116,6 +136,10 @@ while True:
 
     if new_df is None:
         break
+    
+    # Add Ichimoku Cloud components
+    new_df = add_ichimoku(new_df)
+    
     df_list.append(new_df)
     startTime = endTime # as data is not pulled for endTime timestamp last time, startTime is set to previous loop's endTime
     endTime   = str(int(startTime) + (limitP*60*1000*intervalP))
@@ -133,7 +157,7 @@ while True:
     try:
 
         conn = sqlite3.connect('ohlc.db')
-        column_names=['time','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice']
+        column_names=['time','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice', 'tenkan_sen', 'kijun_sen', 'senkou_span_a','senkou_span_b','chikou_span']
         df.to_sql(f'{symbolP}', conn, if_exists='replace', index=False)
 
         conn.commit()
