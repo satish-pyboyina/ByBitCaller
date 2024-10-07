@@ -37,13 +37,14 @@ categoryP = 'inverse'   # Allowed values: linear,inverse
 symbolP = 'ETHUSD'      # For linear use 'ETHUSDT'; for inverse use 'ETHUSD'
 intervalP = 60 # Time interval for pulling data. Allowed values: 1,3,5,15,30,60,120,240,360,720,D,M,W
 limitP = 1000 # ByBit applies 1000 limit
+db_path = 'ohlc.db'  # Path to your SQLite database
 
 # restricting limit to avoid user error
 if limitP > 1000:
     limitP = 1000
 
 # Set Start Date
-year = 2023
+year = 2024
 month = 1
 day = 1
 
@@ -63,27 +64,59 @@ def get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP):
         limit=limitP,
     ))
 
-    data_list = ohlc['result']['list']
+    # data_list = ohlc['result']['list']
+    
+    # Check if the expected keys exist in the response
+    if 'result' in ohlc and 'list' in ohlc['result']:
+        data_list = ohlc['result']['list']
+    else:
+        print("No data found in the response")
+        return None
+    
+    # print("dl rows:")
+    # dlrows=len(data_list)
+    # print(dlrows)
+
     extracted_data = []
 
+    # top_10_rows = data_list[:10]
+    # print("Top 10 rows from data_list:")
+    # for row in top_10_rows:
+    #     print(row)
+
     for item in data_list:
-        dateTime = int(item[0])/1000
-        startTime = item[0]
-        openPrice = item[1]
-        highPrice = item[2]
-        lowPrice = item[3]
-        closePrice = item[4]
+        if isinstance(item, list) and len(item) >= 5:
+            dateTime = int(item[0])/1000
+            startTime = item[0]
+            openPrice = item[1]
+            highPrice = item[2]
+            lowPrice = item[3]
+            closePrice = item[4]
+            if None not in [dateTime, startTime, openPrice, highPrice, lowPrice, closePrice]:
+                extracted_data.append([dateTime, startTime, openPrice, highPrice, lowPrice, closePrice])
+            else:
+                print(f"Invalid data detected: {[dateTime, startTime, openPrice, highPrice, lowPrice, closePrice]}")
+        else:
+            print(f"Unexpected data format: {item}")
 
-        extracted_data.append([dateTime,startTime, openPrice, highPrice, lowPrice, closePrice])
+    # rows=len(extracted_data)
+    # print(rows)
+    # top_10_extracted = extracted_data[:2]
+    # print("Top 10 extracted rows:")
+    # for row in top_10_extracted:
+    #     print(row)
 
-    df = pd.DataFrame(extracted_data, columns=['dateTime','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice'])
+    # Convert to DataFrame
+    df = pd.DataFrame(extracted_data, columns=['dateTime', 'startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice'])
+    # df = pd.DataFrame(extracted_data, columns=['dateTime','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice'])
 
     # capture and print top 10 rows of dataframe
     # top_10_rows = df.head(10)
     # print(top_10_rows)
 
-    #check if no dataframe is blank to break
-    if (len(df.index) == 0):
+    # Check if the dataframe is empty
+    if df.empty:
+        # print("Data Frame is blank!")
         return None
     
     # write output to a file
@@ -97,12 +130,12 @@ def get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP):
     df.index = [dt.datetime.fromtimestamp(x) for x in df.dateTime]
     # print('index: ' + str(df.index))
     #convert time in seconds to milliseconds
-    df['dateTime'] = pd.to_datetime(df['dateTime']*1000, errors='coerce')
+    df['dateTime'] = pd.to_datetime(df['dateTime']*1000, unit='ms')
     return df
 
 
+################################################## Calculate Ichimoku Cloud components ##################################################
 def add_ichimoku(df):
-    # Calculate Ichimoku Cloud components
     nine_period_high = df['highPrice'].rolling(window=9).max()
     nine_period_low = df['lowPrice'].rolling(window=9).min()
     df['tenkan_sen'] = (nine_period_high + nine_period_low) / 2
@@ -134,33 +167,65 @@ endTime   = str(int(startTime) + (limitP*60*1000*intervalP)) # calculated end ti
 while True:
     new_df = get_bybit_bars(categoryP, symbolP, intervalP, startTime, limitP)
 
-    if new_df is None:
-        break
+    # if new_df is None:
+    #     print("new_df is empty")
+    #     break
+    # else:
+        # print("new_df got data")
     
     # Add Ichimoku Cloud components
-    new_df = add_ichimoku(new_df)
-    
+    if new_df is None:
+        # print("Finished or Failed retrieving data. Exiting.")
+        break
+    else:
+        new_df = add_ichimoku(new_df)
+ 
     df_list.append(new_df)
     startTime = endTime # as data is not pulled for endTime timestamp last time, startTime is set to previous loop's endTime
     endTime   = str(int(startTime) + (limitP*60*1000*intervalP))
 
-    first_datetime = min(new_df.index)
-    last_datetime = max(new_df.index)
+    # first_datetime = min(new_df.index)
+    # last_datetime = max(new_df.index)
 
-    # print("first_datetime: " + str(first_datetime)) # First Timestamp in dataframe
-    # print("last_datetime: " + str(last_datetime)) # Last Timestamp in dataframe
-    # print("StartTime: " + startTime + " , EndTime: " + endTime) # print in milliseconds format
-    # print("StartTimeStamp: " + str(dt.datetime.fromtimestamp(int(startTime)/1000)) + " , EndTimeStamp: " + str(dt.datetime.fromtimestamp(int(endTime)/1000))) # print in timestamp format
+    # print("dl df_list:")
+    # dlrows=len(df_list)
+    # print(dlrows)
 
     df = pd.concat(df_list)
 
+    print("Total Rows:", len(df.index))
+
     try:
 
-        conn = sqlite3.connect('ohlc.db')
-        column_names=['time','startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice', 'tenkan_sen', 'kijun_sen', 'senkou_span_a','senkou_span_b','chikou_span']
-        df.to_sql(f'{symbolP}', conn, if_exists='replace', index=False)
+        conn = sqlite3.connect(db_path)
+        
+        # Check if DataFrame is empty
+        if df.empty:
+            print("DataFrame is empty. No data to write to the database.")
+            break
+        else:
+            # Display the DataFrame columns for verification
+            # print("DataFrame Columns:", df.columns)
 
-        conn.commit()
+            # Ensure the DataFrame contains all necessary columns
+            expected_columns = ['dateTime', 'startTime', 'openPrice', 'highPrice', 'lowPrice', 'closePrice', 'tenkan_sen', 'kijun_sen', 'senkou_span_a', 'senkou_span_b', 'chikou_span']
+            
+            for col in expected_columns:
+                if col not in df.columns:
+                    print(f"Missing expected column: {col}")
+
+            # Write to database
+            df.to_sql(name=symbolP, con=conn, if_exists='replace', index=False)
+
+            # Commit and close the connection
+            conn.commit()
+
+            # Count rows added to target table
+            # cursor = conn.cursor()
+            # cursor.execute(f'select count(*) from {symbolP}')
+            # results = cursor.fetchall()
+            # print(results)
+
         conn.close()
             
     except Exception as e:
